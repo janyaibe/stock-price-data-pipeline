@@ -1,0 +1,28 @@
+name: Stock Price ETL
+
+on:
+  schedule:
+    - cron: '0 * * * *'  # This cron runs the job every hour
+  workflow_dispatch:     # Allows manual triggers of the workflow
+
+jobs:
+  run-etl:
+    runs-on: ubuntu-latest
+
+    steps:
+    - name: Checkout repository
+      uses: actions/checkout@v2
+
+    - name: Set up Python
+      uses: actions/setup-python@v2
+      with:
+        python-version: '3.x'
+
+    - name: Install dependencies
+      run: |
+        python -m pip install --upgrade pip
+        pip install requests python-dotenv sqlite3
+
+    - name: Run ETL Script
+      run: |
+        python data_fetch.py
