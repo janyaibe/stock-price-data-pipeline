@@ -1,18 +1,14 @@
 import sqlite3
 import requests
-import json
-from dotenv import load_dotenv
 import os
+from dotenv import load_dotenv
+import time
 
 # Load environment variables from .env
 load_dotenv()
 
-# Get the API key from .env
+# Get the API key from .env or GitHub Actions secret
 api_key = os.getenv('ALPHA_VANTAGE_API_KEY')
-
-# Connect to SQLite database (stocks.db)
-conn = sqlite3.connect('stocks.db')
-cursor = conn.cursor()
 
 # Function to get stock data
 def get_stock_data(symbol):
@@ -31,6 +27,9 @@ def get_stock_data(symbol):
 
 # Function to insert stock data into the database
 def insert_stock_data(symbol, stock_data):
+    conn = sqlite3.connect('stocks.db')
+    cursor = conn.cursor()
+
     for date, daily_data in stock_data.items():
         cursor.execute('''
             INSERT INTO stock_prices (symbol, date, open, high, low, close, volume)
@@ -45,15 +44,19 @@ def insert_stock_data(symbol, stock_data):
             int(daily_data['5. volume'])
         ))
     conn.commit()
+    conn.close()
 
-# Example usage: Fetch and store stock data for Apple (AAPL)
-stock_symbol = "AAPL"
-stock_data = get_stock_data(stock_symbol)
+# ETL Process: Fetch and store data for multiple stock symbols
+def run_etl(symbols):
+    for symbol in symbols:
+        stock_data = get_stock_data(symbol)
+        if stock_data:
+            insert_stock_data(symbol, stock_data)
+            print(f"Stock data for {symbol} inserted into the database.")
+        time.sleep(60)  # Sleep for 1 minute between API calls to avoid exceeding the rate limit
 
-# If data was retrieved, insert it into the database
-if stock_data:
-    insert_stock_data(stock_symbol, stock_data)
-    print(f"Stock data for {stock_symbol} has been inserted into the database.")
+# List of stock symbols to track
+symbols = ["AAPL", "GOOGL", "MSFT"]
 
-# Close the connection to the database
-conn.close()
+# Run the ETL process
+run_etl(symbols)
