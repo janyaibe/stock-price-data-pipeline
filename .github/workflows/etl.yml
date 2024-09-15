@@ -26,3 +26,9 @@ jobs:
     - name: Run ETL Script
       run: |
         python data_fetch.py
+
+    - name: Upload SQLite Database
+      uses: actions/upload-artifact@v3
+      with:
+        name: stocks-db
+        path: stocks.db
