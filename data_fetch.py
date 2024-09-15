@@ -1,6 +1,6 @@
+import os
 import sqlite3
 import requests
-import os
 from dotenv import load_dotenv
 import time
 
@@ -9,6 +9,9 @@ load_dotenv()
 
 # Get the API key from .env or GitHub Actions secret
 api_key = os.getenv('ALPHA_VANTAGE_API_KEY')
+
+# Print the current working directory
+print("Current Working Directory:", os.getcwd())
 
 # Function to get stock data
 def get_stock_data(symbol):
@@ -42,6 +45,7 @@ def create_table_if_not_exists(cursor):
 
 # Function to insert stock data into the database
 def insert_stock_data(symbol, stock_data):
+    # Connect to SQLite database (this will create 'stocks.db' if it doesn't exist)
     conn = sqlite3.connect('stocks.db')
     cursor = conn.cursor()
 
@@ -63,14 +67,17 @@ def insert_stock_data(symbol, stock_data):
         ))
     conn.commit()
     conn.close()
+    print(f"Stock data for {symbol} inserted into the database.")
 
 # ETL Process: Fetch and store data for multiple stock symbols
 def run_etl(symbols):
     for symbol in symbols:
+        print(f"Fetching stock data for {symbol}...")
         stock_data = get_stock_data(symbol)
         if stock_data:
             insert_stock_data(symbol, stock_data)
-            print(f"Stock data for {symbol} inserted into the database.")
+        else:
+            print(f"No data fetched for {symbol}.")
         time.sleep(60)  # Sleep for 1 minute between API calls to avoid exceeding the rate limit
 
 # List of stock symbols to track
