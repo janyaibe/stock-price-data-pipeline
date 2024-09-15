@@ -25,10 +25,28 @@ def get_stock_data(symbol):
         print(f"Error: Failed to fetch data (status code: {response.status_code})")
         return None
 
+# Function to create the stock_prices table if it doesn't exist
+def create_table_if_not_exists(cursor):
+    cursor.execute('''
+    CREATE TABLE IF NOT EXISTS stock_prices (
+        id INTEGER PRIMARY KEY,
+        symbol TEXT NOT NULL,
+        date TEXT NOT NULL,
+        open REAL,
+        high REAL,
+        low REAL,
+        close REAL,
+        volume INTEGER
+    )
+    ''')
+
 # Function to insert stock data into the database
 def insert_stock_data(symbol, stock_data):
     conn = sqlite3.connect('stocks.db')
     cursor = conn.cursor()
+
+    # Ensure the table exists before inserting data
+    create_table_if_not_exists(cursor)
 
     for date, daily_data in stock_data.items():
         cursor.execute('''
