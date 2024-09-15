@@ -28,7 +28,7 @@ Before you begin, ensure you have the following installed:
 You can install the required packages using:
 ```bash
 pip install requests python-dotenv pandas matplotlib
-
+```bash
 
 ### API Key
 To fetch stock data, you'll need to sign up for an Alpha Vantage API key:
